@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "Matriz.cpp"  
-
-void calculateHeat(int intervalos);
+#include "Matriz.cpp"
 
 void calculateHeat(int intervalos, double Tl, double Tr, double C, int intervalosX, int intervalosTiempo) {
     Matriz myMatriz = Matriz();
