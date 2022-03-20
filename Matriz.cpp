@@ -1,7 +1,3 @@
-// Maria Isabel Ortiz 
-// Luis Alejandro Urbina
-// Proyecto 1 
-
 #include <stdio.h>
 
 class Matriz {
@@ -9,6 +5,7 @@ class Matriz {
         double *matriz;
         int columnas;
         int filas;
+        
     double get(int i, int j){
         return matriz[columnas*i + j];
     }
