@@ -1,46 +1,40 @@
 #include <stdio.h>
 #include <math.h>
-#include "Matriz.cpp"
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 using namespace std::chrono;
+#include "Matriz.cpp"
 
-void calculateHeat(int intervalos, double Tl, double Tr, double C, int intervalosX, int intervalosTiempo) {
+void calcularHeat(int intervalosDistancia, int intervalosTiempo, double Tl, double Tr) {
     bool criterioSalida = false;
     int indicex = 0;
 
-    Matriz myMatriz = Matriz(intervalosX, intervalosTiempo);
+    Matriz myMatriz = Matriz(intervalosDistancia, intervalosTiempo);
 
     while (!criterioSalida){
-        for (int indicey = 1; indicey < intervalosX - 1; indicey++){
-            double T_ji;
-            double T_J1i;
-            double T_j1i;
+        for (int indicey = 1; indicey < intervalosDistancia - 1; indicey++){
+            double T_ji; double T_J1i; double T_j1i;
             
-            if(indicey+1==intervalosX-1){
-                myMatriz.matriz[myMatriz.columnas*(indicey+1) + indicex] = Tr;
-            }
+            if(indicey+1==intervalosDistancia-1) myMatriz.matriz[myMatriz.columnas*(indicey+1) + indicex] = Tr;
 
-            if(indicey-1==0){
-                myMatriz.matriz[myMatriz.columnas*(indicey-1) + indicex] = Tl;
-            }
+            if(indicey-1==0) myMatriz.matriz[myMatriz.columnas*(indicey-1) + indicex] = Tl;
 
             if(indicex!=0){
                 T_ji = myMatriz.matriz[myMatriz.columnas*indicey + indicex];
                 T_J1i = myMatriz.matriz[myMatriz.columnas*(indicey+1) + indicex];
                 T_j1i = myMatriz.matriz[myMatriz.columnas*(indicey-1) + indicex];
             } else {
-                T_ji = (Tr-Tl)/(indicey*intervalosX);
-                T_J1i = (Tr-Tl)/((indicey+1)*intervalosX);
-                T_j1i = (Tr-Tl)/((indicey-1)*intervalosX);
+                T_ji = (Tr-Tl)/(indicey*intervalosDistancia);
+                T_J1i = (Tr-Tl)/((indicey+1)*intervalosDistancia);
+                T_j1i = (Tr-Tl)/((indicey-1)*intervalosDistancia);
 
-                myMatriz.matriz[myMatriz.columnas*(indicey) + indicex] = (Tr-Tl)/(indicey*intervalosX);
+                myMatriz.matriz[myMatriz.columnas*(indicey) + indicex] = (Tr-Tl)/(indicey*intervalosDistancia);
             }
 
-            double valor = C*(T_j1i - 2*T_ji + T_J1i) + T_ji;
+            double valor = 0.35*(T_j1i - 2*T_ji + T_J1i) + T_ji;
 
-            if(indicex!=0 && indicey-1!=0 && indicey+1!= intervalosX-1){
+            if(indicex!=0 && indicey-1!=0 && indicey+1!= intervalosDistancia-1){
                 if(indicex>10000){ criterioSalida = true;}
             }
             myMatriz.matriz[myMatriz.columnas*(indicey) + (indicex+1)] = valor;
@@ -49,37 +43,54 @@ void calculateHeat(int intervalos, double Tl, double Tr, double C, int intervalo
     }
 }
 
-int main(int argc, char const *argv[]) {
-    int cantidadthreads;
+int main() {
+    int intervalosDistancia;
     double Tl;
     double Tr;
 
-    std::cout << "Ingrese la cantidad de intervalos en X: ";
-    std::cin >> cantidadthreads;
+    std::cout << "Ingrese la cantidad de intervalos de distancia: ";
+    std::cin >> intervalosDistancia;
 
-    std::cout << "Ingrese el Tl: ";
+    if (intervalosDistancia <= 0) {
+        std::cout << "Por favor ingrese una cantidad de threads mayor a 0";
+        return 1;
+    }
+
+    std::cout << "Ingrese la temperatura en la frontera izquierda (Tl): ";
     std::cin >> Tl;
 
-    std::cout << "Ingrese el Tr: ";
+    if (Tl <= 0.0) {
+        std::cout << "Por favor ingrese una temperatura de frontera izquierda Tl mayor a 0";
+        return 1;
+    }
+
+    std::cout << "Ingrese la temperatura en la fronter derecha (Tr): ";
     std::cin >> Tr;
 
-    double C=0.35;
+    if (Tl <= 0.0) {
+        std::cout << "Por favor ingrese una temperatura de frontera derecha Tr mayor a 0";
+        return 1;
+    }
 
-    int intervalosX = cantidadthreads;
-    int intervalosTiempo = int((pow(intervalosX, 2) * 6e-3)/C);
+    if ((Tr-Tl) < 60.0) {
+        std::cout << "La diferencia entre las temperaturas de frontera debe ser de al menos 60.0 °C";
+        return 1;
+    }
+
+    int intervalosTiempo = int((pow(intervalosDistancia, 2) * 6e-3)/0.35);
     
     std::cout << "\nCorriendo programa con parámetros: " << std::endl;
-    std::cout << "Intervalos de distancia = " << intervalosX << std::endl;
-    std::cout << "C = " << C << std::endl;
+    std::cout << "Intervalos de distancia = " << intervalosDistancia << std::endl;
     std::cout << "Intervalos de tiempo = " << intervalosTiempo << std::endl;
     std::cout << "Tl = " << Tl << "°C" << std::endl;
     std::cout << "Tr = " << Tr << "°C" << std::endl;
+    std::cout << "C = " << 0.35 << std::endl;
 
-    auto inicial = high_resolution_clock::now();
+    auto inicial = steady_clock::now();
 
-    calculateHeat(cantidadthreads, Tl, Tr, C , intervalosX, intervalosTiempo);
+    calcularHeat(intervalosDistancia, intervalosTiempo, Tl, Tr);
     
-    auto final = high_resolution_clock::now();
+    auto final = steady_clock::now();
     auto tiempoTotal = duration_cast<milliseconds>(final - inicial);
 
     std::cout << "Tiempo de programa secuencial: " << tiempoTotal.count() << " ms" << std::endl;
