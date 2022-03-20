@@ -2,14 +2,13 @@
 
 class Matriz {
     public:
-        double *matriz;
-        int columnas;
         int filas;
-        
-    double get(int i, int j){
-        return matriz[columnas*i + j];
-    }
-    void set(int i, int j, double element){
-        matriz[columnas*i + j] = element;
-    }
+        int columnas;
+        double *matriz;
+
+        Matriz(int myFilas, int myColumnas){
+            filas = myFilas;
+            columnas = myColumnas;
+            matriz = new double[filas * columnas];
+        }
 };

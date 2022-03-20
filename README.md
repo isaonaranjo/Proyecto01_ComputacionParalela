@@ -1,1 +1,1 @@
-# Proyecto01_ComputacionParalela
+# Proyecto01 ComputacionParalela
